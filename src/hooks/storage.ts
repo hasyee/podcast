@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
-import { getStore } from '../utils/indexdb';
-import { Episode, EpisodeFile } from '../types';
+import { Episode } from '../types';
 import { getBlobFromUrl } from '../utils/audio';
+import { getStore } from '../utils/indexdb';
 
 export const useStorage = () => {
   const save = useCallback(async (episode: Episode) => {

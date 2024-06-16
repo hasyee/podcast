@@ -1,21 +1,23 @@
 import { useCallback } from 'react';
-import { Episode } from '../types';
+import { Channel, Episode } from '../types';
 
 export const useSearch = () => {
   const lang = 'hu_hu';
 
-  return useCallback(async (term: string): Promise<{ channels: any[]; episodes: Episode[] }> => {
+  return useCallback(async (term: string): Promise<{ channels: Channel[]; episodes: Episode[] }> => {
     const channels = await fetch(
       'https://itunes.apple.com/search?' + new URLSearchParams({ term, entity: 'podcast', lang })
     )
       .then(result => result.json())
       .then(({ results }: { resultCount: 1; results: any[] }) => {
         //console.log(results);
-        return results.map(({ collectionId, collectionName, artworkUrl100, feedUrl }) => ({
-          id: collectionId,
+        return results.map(({ collectionId, collectionName, artistName, artworkUrl600, feedUrl, trackCount }) => ({
+          id: 'itunes:' + collectionId,
           name: collectionName,
-          image: artworkUrl100,
-          feedUrl
+          creatorName: artistName,
+          imageUrl: artworkUrl600,
+          feedUrl,
+          episodeCount: trackCount
         }));
       });
 
@@ -24,15 +26,30 @@ export const useSearch = () => {
     )
       .then(result => result.json())
       .then(({ results }: { resultCount: 1; results: any[] }) => {
-        //console.log(results);
-        return results.map(({ trackId, collectionName, trackName, releaseDate, artworkUrl160, episodeUrl }) => ({
-          id: trackId.toString(),
-          channelName: collectionName,
-          name: trackName,
-          image: artworkUrl160,
-          releaseDate,
-          audioUrl: episodeUrl
-        }));
+        console.log(results);
+        return results.map(
+          ({
+            trackId,
+            collectionId,
+            collectionName,
+            trackName,
+            releaseDate,
+            artworkUrl600,
+            episodeUrl,
+            trackTimeMillis,
+            description
+          }) => ({
+            id: 'itunes:' + trackId.toString(),
+            channelId: 'itunes:' + collectionId.toString(),
+            channelName: collectionName,
+            name: trackName,
+            imageUrl: artworkUrl600,
+            duration: trackTimeMillis / 1000,
+            releaseDate,
+            audioUrl: episodeUrl,
+            description
+          })
+        );
       });
 
     return { channels, episodes };

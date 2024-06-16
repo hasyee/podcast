@@ -1,16 +1,16 @@
+import moment from 'moment';
 import { useCallback, useEffect, useState } from 'react';
 import './App.css';
-import { useSearch } from './hooks';
+import Test from './Test';
+import { useSearch, useSearchResult } from './hooks';
 import { useStorage } from './hooks/storage';
 import { Episode } from './types';
-import Test from './Test';
 
 let audio: HTMLAudioElement;
 
 function App() {
   const search = useSearch();
-  const [channels, setChannels] = useState<any[]>([]);
-  const [episodes, setEpisodes] = useState<Episode[]>([]);
+  const [{ set: setSearchResults }, searchResult] = useSearchResult();
   const [downloadedIds, setDownloadedIds] = useState<string[]>([]);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [rate, setRate] = useState(1);
@@ -20,11 +20,8 @@ function App() {
   const { save, load, remove, getIds } = useStorage();
 
   useEffect(() => {
-    search('sokolébresztő').then(({ channels, episodes }) => {
-      setChannels(channels);
-      setEpisodes(episodes);
-    });
-  }, [search]);
+    search('parallaxis').then(setSearchResults);
+  }, [search, setSearchResults]);
 
   useEffect(() => {
     getIds().then(setDownloadedIds);
@@ -109,10 +106,13 @@ function App() {
         <h1>Search</h1>
         <h2>Channels</h2>
         <ul>
-          {channels.map(channel => (
+          {searchResult.channels.map(channel => (
             <li key={channel.id}>
-              <img src={channel.image} alt="channel" />
+              <img src={channel.imageUrl} alt="channel" width="200px" />
               <div>{channel.name}</div>
+              <div>From: {channel.creatorName}</div>
+              <div>Episodes: {channel.episodeCount}</div>
+
               <div>
                 <a href={channel.feedUrl} target="_blank" rel="noreferrer">
                   Feed URL
@@ -127,37 +127,44 @@ function App() {
         <hr />
         <h2>Episodes</h2>
         <ul>
-          {episodes.map(episode => (
-            <li key={episode.id}>
-              <img src={episode.image} alt="episode" />
-              <div>
-                {episode.channelName} - {episode.name}
-              </div>
-              <div>{episode.releaseDate}</div>
-              <audio controls>
-                <source src={episode.audioUrl} type="audio/mpeg" />
-                Your browser does not support the audio element.
-              </audio>
-              <div>
-                <button
-                  onClick={() => {
-                    downloadedIds.includes(episode.id) ? removeEpisode(episode.id) : saveEpisode(episode);
-                  }}
-                >
-                  {downloadedIds.includes(episode.id) ? 'Remove' : 'Download'}
-                </button>
-                {downloadedIds.includes(episode.id) && (
-                  <button onClick={() => (playingId === episode.id ? stop() : loadEpisode(episode.id))}>
-                    {playingId === episode.id ? 'Pause' : 'Play'} downloaded
+          {searchResult.episodes.map(episode => {
+            const duration = moment.duration(episode.duration, 'seconds');
+            return (
+              <li key={episode.id}>
+                <img src={episode.imageUrl} alt="episode" width="200px" />
+                <div>
+                  {episode.channelName} - {episode.name}
+                </div>
+                <div>Release date: {episode.releaseDate}</div>
+                <div>
+                  Duration: {duration.hours()}:{duration.minutes()}:{duration.seconds()}
+                </div>
+                <p>{episode.description}</p>
+                <audio controls>
+                  <source src={episode.audioUrl} type="audio/mpeg" />
+                  Your browser does not support the audio element.
+                </audio>
+                <div>
+                  <button
+                    onClick={() => {
+                      downloadedIds.includes(episode.id) ? removeEpisode(episode.id) : saveEpisode(episode);
+                    }}
+                  >
+                    {downloadedIds.includes(episode.id) ? 'Remove' : 'Download'}
                   </button>
-                )}
-              </div>
+                  {downloadedIds.includes(episode.id) && (
+                    <button onClick={() => (playingId === episode.id ? stop() : loadEpisode(episode.id))}>
+                      {playingId === episode.id ? 'Pause' : 'Play'} downloaded
+                    </button>
+                  )}
+                </div>
 
-              <br />
-              <br />
-              <br />
-            </li>
-          ))}
+                <br />
+                <br />
+                <br />
+              </li>
+            );
+          })}
         </ul>
       </main>
     </div>

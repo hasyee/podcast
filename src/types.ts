@@ -1,10 +1,22 @@
+export type Channel = {
+  id: string;
+  name: string;
+  creatorName: string;
+  imageUrl: string;
+  feedUrl: string;
+  episodeCount: number;
+}
+
 export type Episode = {
   id: string;
   name: string;
+  channelId: string;
   channelName: string;
   releaseDate: string;
-  image: string;
+  duration: number;
+  imageUrl: string;
   audioUrl: string;
+  description: string;
 };
 
 export type EpisodeFile = {
