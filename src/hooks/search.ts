@@ -1,9 +1,10 @@
 import { useCallback } from 'react';
+import { Episode } from '../types';
 
 export const useSearch = () => {
   const lang = 'hu_hu';
 
-  return useCallback(async (term: string) => {
+  return useCallback(async (term: string): Promise<{ channels: any[]; episodes: Episode[] }> => {
     const channels = await fetch(
       'https://itunes.apple.com/search?' + new URLSearchParams({ term, entity: 'podcast', lang })
     )
@@ -25,12 +26,12 @@ export const useSearch = () => {
       .then(({ results }: { resultCount: 1; results: any[] }) => {
         //console.log(results);
         return results.map(({ trackId, collectionName, trackName, releaseDate, artworkUrl160, episodeUrl }) => ({
-          id: trackId,
+          id: trackId.toString(),
           channelName: collectionName,
           name: trackName,
           image: artworkUrl160,
           releaseDate,
-          audio: episodeUrl
+          audioUrl: episodeUrl
         }));
       });
 
