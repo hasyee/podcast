@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useCounter, useMinus } from './hooks';
+import { Button, Group, Text } from '@mantine/core';
 
 function Test() {
   const [bool, setBool] = useState(false);
@@ -7,15 +8,21 @@ function Test() {
   const minus = useMinus();
 
   return (
-    <div>
-      <p>{counter}</p>
-      <p>{minus}</p>
-      <p>{bool ? 'true' : 'false'}</p>
+    <Group ml={'auto'}>
+      <Text>{counter}</Text>
+      <Text>{minus}</Text>
+      <Text>{bool ? 'true' : 'false'}</Text>
 
-      <button onClick={increment}>Increment</button>
-      <button onClick={reset}>Reset</button>
-      <button onClick={() => setBool(bool => !bool)}>Toggle</button>
-    </div>
+      <Button size="compact-xs" onClick={increment}>
+        Increment
+      </Button>
+      <Button size="compact-xs" onClick={reset}>
+        Reset
+      </Button>
+      <Button size="compact-xs" onClick={() => setBool(bool => !bool)}>
+        Toggle
+      </Button>
+    </Group>
   );
 }
 

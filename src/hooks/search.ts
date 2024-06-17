@@ -10,7 +10,6 @@ export const useSearch = () => {
     )
       .then(result => result.json())
       .then(({ results }: { resultCount: 1; results: any[] }) => {
-        //console.log(results);
         return results.map(({ collectionId, collectionName, artistName, artworkUrl600, feedUrl, trackCount }) => ({
           id: 'itunes:' + collectionId,
           name: collectionName,
