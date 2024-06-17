@@ -1,6 +1,5 @@
 export const getBlobFromUrl = async (url: string) => {
   const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
-  const response = await fetch(proxyUrl, { mode: 'no-cors', redirect: 'follow' });
-  console.log(response);
+  const response = await fetch(proxyUrl, { redirect: 'follow' });
   return await response.blob();
 };
