@@ -5,7 +5,24 @@ import { useSearch, useSearchResult } from './hooks';
 import { useStorage } from './hooks/storage';
 import { Episode } from './types';
 import CustomAppShell from '../src/components/CustomAppShell';
-import { Box, Card, Group, Title, Image, Button, Text, Grid, Container } from '@mantine/core';
+import {
+  Box,
+  Card,
+  Group,
+  Title,
+  Image,
+  Button,
+  Text,
+  Grid,
+  Container,
+  Menu,
+  MenuTarget,
+  MenuDropdown,
+  MenuLabel,
+  MenuItem,
+  ActionIcon
+} from '@mantine/core';
+import { IconDotsVertical } from '@tabler/icons-react';
 
 let audio: HTMLAudioElement;
 
@@ -151,11 +168,40 @@ function App() {
               {searchResult.episodes.map(episode => {
                 const duration = moment.duration(episode.duration, 'seconds');
                 return (
-                  <Grid.Col key={episode.id} span={{ base: 12, sm: 6, lg: 3 }}>
+                  <Grid.Col key={episode.id} span={{ base: 12, sm: 6, lg: 4 }}>
                     <Card shadow="sm" padding="lg" radius="md" withBorder>
                       <Card.Section>
                         <Image src={episode.imageUrl} fit="contain" alt="Norway" />
                       </Card.Section>
+
+                      <Group justify="end" mt={'md'}>
+                        <Menu>
+                          <MenuTarget>
+                            <ActionIcon variant="default" p={5} size="compact-md">
+                              <IconDotsVertical size={16} />
+                            </ActionIcon>
+                          </MenuTarget>
+                          <MenuDropdown>
+                            <MenuLabel>Download actions</MenuLabel>
+                            <MenuItem
+                              onClick={() => {
+                                downloadedIds.includes(episode.id) ? removeEpisode(episode.id) : saveEpisode(episode);
+                              }}
+                            >
+                              {downloadedIds.includes(episode.id) ? 'Remove' : 'Download'}
+                            </MenuItem>
+                            {downloadedIds.includes(episode.id) && (
+                              <>
+                                {' '}
+                                <MenuLabel>Play actions</MenuLabel>
+                                <MenuItem onClick={() => (playingId === episode.id ? stop() : loadEpisode(episode.id))}>
+                                  {playingId === episode.id ? 'Pause' : 'Play'} downloaded
+                                </MenuItem>
+                              </>
+                            )}
+                          </MenuDropdown>
+                        </Menu>
+                      </Group>
 
                       <Group justify="space-between" mt="md" mb="xs">
                         <Text fw={500}>
@@ -179,21 +225,6 @@ function App() {
                           <source src={episode.audioUrl} type="audio/mpeg" />
                           Your browser does not support the audio element.
                         </audio>
-                      </Group>
-
-                      <Group mt={'md'}>
-                        <Button
-                          onClick={() => {
-                            downloadedIds.includes(episode.id) ? removeEpisode(episode.id) : saveEpisode(episode);
-                          }}
-                        >
-                          {downloadedIds.includes(episode.id) ? 'Remove' : 'Download'}
-                        </Button>
-                        {downloadedIds.includes(episode.id) && (
-                          <Button onClick={() => (playingId === episode.id ? stop() : loadEpisode(episode.id))}>
-                            {playingId === episode.id ? 'Pause' : 'Play'} downloaded
-                          </Button>
-                        )}
                       </Group>
                     </Card>
                   </Grid.Col>
