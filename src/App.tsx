@@ -143,15 +143,7 @@ function App() {
                     Episodes: {channel.episodeCount}
                   </Text>
 
-                  <Button
-                    component="a"
-                    target="_blank"
-                    href={channel.feedUrl}
-                    color="blue"
-                    fullWidth
-                    mt="md"
-                    radius="md"
-                  >
+                  <Button component="a" target="_blank" href={channel.feedUrl} fullWidth mt="md" radius="md">
                     Feed URL
                   </Button>
                 </Card>
@@ -170,38 +162,39 @@ function App() {
                 return (
                   <Grid.Col key={episode.id} span={{ base: 12, sm: 6, lg: 4 }}>
                     <Card shadow="sm" padding="lg" radius="md" withBorder>
-                      <Card.Section>
+                      <Card.Section pos={'relative'}>
                         <Image src={episode.imageUrl} fit="contain" alt="Norway" />
+                        <Group justify="end" mt={'md'} pos={'absolute'} top="0" right={16}>
+                          <Menu>
+                            <MenuTarget>
+                              <ActionIcon variant="default" p={5} size="compact-md">
+                                <IconDotsVertical size={16} />
+                              </ActionIcon>
+                            </MenuTarget>
+                            <MenuDropdown>
+                              <MenuLabel>Download actions</MenuLabel>
+                              <MenuItem
+                                onClick={() => {
+                                  downloadedIds.includes(episode.id) ? removeEpisode(episode.id) : saveEpisode(episode);
+                                }}
+                              >
+                                {downloadedIds.includes(episode.id) ? 'Remove' : 'Download'}
+                              </MenuItem>
+                              {downloadedIds.includes(episode.id) && (
+                                <>
+                                  {' '}
+                                  <MenuLabel>Play actions</MenuLabel>
+                                  <MenuItem
+                                    onClick={() => (playingId === episode.id ? stop() : loadEpisode(episode.id))}
+                                  >
+                                    {playingId === episode.id ? 'Pause' : 'Play'} downloaded
+                                  </MenuItem>
+                                </>
+                              )}
+                            </MenuDropdown>
+                          </Menu>
+                        </Group>
                       </Card.Section>
-
-                      <Group justify="end" mt={'md'}>
-                        <Menu>
-                          <MenuTarget>
-                            <ActionIcon variant="default" p={5} size="compact-md">
-                              <IconDotsVertical size={16} />
-                            </ActionIcon>
-                          </MenuTarget>
-                          <MenuDropdown>
-                            <MenuLabel>Download actions</MenuLabel>
-                            <MenuItem
-                              onClick={() => {
-                                downloadedIds.includes(episode.id) ? removeEpisode(episode.id) : saveEpisode(episode);
-                              }}
-                            >
-                              {downloadedIds.includes(episode.id) ? 'Remove' : 'Download'}
-                            </MenuItem>
-                            {downloadedIds.includes(episode.id) && (
-                              <>
-                                {' '}
-                                <MenuLabel>Play actions</MenuLabel>
-                                <MenuItem onClick={() => (playingId === episode.id ? stop() : loadEpisode(episode.id))}>
-                                  {playingId === episode.id ? 'Pause' : 'Play'} downloaded
-                                </MenuItem>
-                              </>
-                            )}
-                          </MenuDropdown>
-                        </Menu>
-                      </Group>
 
                       <Group justify="space-between" mt="md" mb="xs">
                         <Text fw={500} lineClamp={3}>
