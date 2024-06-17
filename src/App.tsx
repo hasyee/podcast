@@ -204,7 +204,7 @@ function App() {
                       </Group>
 
                       <Group justify="space-between" mt="md" mb="xs">
-                        <Text fw={500}>
+                        <Text fw={500} lineClamp={3}>
                           {episode.channelName} - {episode.name}
                         </Text>
                       </Group>
