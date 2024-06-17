@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import './App.css';
 import { useSearch, useSearchResult } from './hooks';
 import { useStorage } from './hooks/storage';
@@ -20,14 +20,14 @@ import {
   MenuDropdown,
   MenuLabel,
   MenuItem,
-  ActionIcon
+  ActionIcon,
+  Slider
 } from '@mantine/core';
 import { IconDotsVertical } from '@tabler/icons-react';
 
-let audio: HTMLAudioElement;
-
 function App() {
   const search = useSearch();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [{ set: setSearchResults }, searchResult] = useSearchResult();
   const [downloadedIds, setDownloadedIds] = useState<string[]>([]);
   const [playingId, setPlayingId] = useState<string | null>(null);
@@ -46,11 +46,11 @@ function App() {
   }, [getIds]);
 
   useEffect(() => {
-    if (audio) audio.playbackRate = rate;
+    if (audioRef.current) audioRef.current.playbackRate = rate;
   }, [rate]);
 
   useEffect(() => {
-    if (time) audio.currentTime = time;
+    if (time && audioRef.current) audioRef.current.currentTime = time;
   }, [time]);
 
   const saveEpisode = useCallback(
@@ -62,15 +62,14 @@ function App() {
   );
   const loadEpisode = useCallback(
     async (id: string) => {
-      if (audio && !audio.paused) audio.pause();
+      if (audioRef.current && !audioRef.current?.paused) audioRef.current.pause();
       const episodeFile = await load(id);
-      console.log(episodeFile);
-      audio = new Audio(URL.createObjectURL(episodeFile.blob));
-      (window as any).audio = audio;
-      audio.addEventListener('canplaythrough', () => {
-        if (audio.paused) {
-          setDuration(audio.duration);
-          audio.play();
+      audioRef.current = new Audio(URL.createObjectURL(episodeFile.blob));
+      audioRef.current.addEventListener('canplaythrough', () => {
+        if (audioRef.current?.paused) {
+          (window as any).audio = audioRef.current;
+          setDuration(audioRef.current?.duration);
+          audioRef.current?.play();
           setPlayingId(id);
         }
       });
@@ -78,7 +77,7 @@ function App() {
     [load]
   );
   const stop = useCallback(() => {
-    audio.pause();
+    audioRef.current?.pause();
     setPlayingId(null);
     setTime(0);
     setDuration(null);
@@ -90,8 +89,8 @@ function App() {
     },
     [remove, getIds]
   );
-  const handleRateChange = useCallback((evt: any) => {
-    const value = Number.isFinite(parseFloat(evt.target.value)) ? parseFloat(evt.target.value) : 1;
+  const handleRateChange = useCallback((newValue: any) => {
+    const value = Number.isFinite(parseFloat(newValue)) ? parseFloat(newValue) : 1;
     setRate(value);
   }, []);
   const handleTimeChange = useCallback((evt: any) => {
@@ -106,8 +105,8 @@ function App() {
           <header>
             {playingId && (
               <div>
-                <span>{rate}</span>
-                <input type="range" min={0} max={2} step={0.1} value={rate} onChange={handleRateChange} />
+                <span>Speed {rate}x</span>
+                <Slider min={0} max={2} step={0.1} value={rate} onChange={handleRateChange} />
               </div>
             )}
             {duration && (
