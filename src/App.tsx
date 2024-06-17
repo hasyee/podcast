@@ -1,10 +1,11 @@
 import moment from 'moment';
 import { useCallback, useEffect, useState } from 'react';
 import './App.css';
-import Test from './Test';
 import { useSearch, useSearchResult } from './hooks';
 import { useStorage } from './hooks/storage';
 import { Episode } from './types';
+import CustomAppShell from '../src/components/CustomAppShell';
+import { Box, Card, Group, Title, Image, Button, Text, Grid } from '@mantine/core';
 
 let audio: HTMLAudioElement;
 
@@ -82,92 +83,117 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
-      <header>
-        <Test />
-        {playingId && (
-          <div>
-            <span>{rate}</span>
-            <input type="range" min={0} max={2} step={0.1} value={rate} onChange={handleRateChange} />
-          </div>
-        )}
-        {duration && (
-          <div>
-            <span>
-              {time} / {duration}
-              {<input type="range" min={0} max={duration} step={1} value={time} onChange={handleTimeChange} />}
-            </span>
-          </div>
-        )}
-      </header>
+    <CustomAppShell>
+      <div className="App">
+        <header>
+          {playingId && (
+            <div>
+              <span>{rate}</span>
+              <input type="range" min={0} max={2} step={0.1} value={rate} onChange={handleRateChange} />
+            </div>
+          )}
+          {duration && (
+            <div>
+              <span>
+                {time} / {duration}
+                {<input type="range" min={0} max={duration} step={1} value={time} onChange={handleTimeChange} />}
+              </span>
+            </div>
+          )}
+        </header>
 
-      <main>
-        <hr />
-        <h1>Search</h1>
-        <h2>Channels</h2>
-        <ul>
-          {searchResult.channels.map(channel => (
-            <li key={channel.id}>
-              <img src={channel.imageUrl} alt="channel" width="200px" />
-              <div>{channel.name}</div>
-              <div>From: {channel.creatorName}</div>
-              <div>Episodes: {channel.episodeCount}</div>
+        <Box>
+          <Title mb={'md'} order={2}>
+            Channels
+          </Title>
 
-              <div>
-                <a href={channel.feedUrl} target="_blank" rel="noreferrer">
+          <Group>
+            {searchResult.channels.map(channel => (
+              <Card key={channel.id} shadow="sm" padding="lg" radius="md" withBorder>
+                <Card.Section>
+                  <Image w={220} src={channel.imageUrl} fit="contain" alt="Norway" />
+                </Card.Section>
+
+                <Group justify="space-between" mt="md" mb="xs">
+                  <Text fw={500}>{channel.name}</Text>
+                </Group>
+
+                <Text size="sm" c="dimmed">
+                  From: {channel.creatorName}
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Episodes: {channel.episodeCount}
+                </Text>
+
+                <Button component="a" target="_blank" href={channel.feedUrl} color="blue" fullWidth mt="md" radius="md">
                   Feed URL
-                </a>
-              </div>
-              <br />
-              <br />
-              <br />
-            </li>
-          ))}
-        </ul>
-        <hr />
-        <h2>Episodes</h2>
-        <ul>
-          {searchResult.episodes.map(episode => {
-            const duration = moment.duration(episode.duration, 'seconds');
-            return (
-              <li key={episode.id}>
-                <img src={episode.imageUrl} alt="episode" width="200px" />
-                <div>
-                  {episode.channelName} - {episode.name}
-                </div>
-                <div>Release date: {episode.releaseDate}</div>
-                <div>
-                  Duration: {duration.hours()}:{duration.minutes()}:{duration.seconds()}
-                </div>
-                <p>{episode.description}</p>
-                <audio controls>
-                  <source src={episode.audioUrl} type="audio/mpeg" />
-                  Your browser does not support the audio element.
-                </audio>
-                <div>
-                  <button
-                    onClick={() => {
-                      downloadedIds.includes(episode.id) ? removeEpisode(episode.id) : saveEpisode(episode);
-                    }}
-                  >
-                    {downloadedIds.includes(episode.id) ? 'Remove' : 'Download'}
-                  </button>
-                  {downloadedIds.includes(episode.id) && (
-                    <button onClick={() => (playingId === episode.id ? stop() : loadEpisode(episode.id))}>
-                      {playingId === episode.id ? 'Pause' : 'Play'} downloaded
-                    </button>
-                  )}
-                </div>
+                </Button>
+              </Card>
+            ))}
+          </Group>
+        </Box>
 
-                <br />
-                <br />
-                <br />
-              </li>
-            );
-          })}
-        </ul>
-      </main>
-    </div>
+        <Box>
+          <Title mt={'md'} order={2}>
+            Episodes
+          </Title>
+
+          <Grid mt="md">
+            {searchResult.episodes.map(episode => {
+              const duration = moment.duration(episode.duration, 'seconds');
+              return (
+                <Grid.Col key={episode.id} span={{ base: 12, sm: 6, lg: 3 }}>
+                  <Card shadow="sm" padding="lg" radius="md" withBorder>
+                    <Card.Section>
+                      <Image src={episode.imageUrl} fit="contain" alt="Norway" />
+                    </Card.Section>
+
+                    <Group justify="space-between" mt="md" mb="xs">
+                      <Text fw={500}>
+                        {episode.channelName} - {episode.name}
+                      </Text>
+                    </Group>
+
+                    <Text size="sm" c="dimmed">
+                      Release date: {episode.releaseDate}
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      Duration: {duration.hours()}:{duration.minutes()}:{duration.seconds()}
+                    </Text>
+
+                    <Text mt={'sm'} size="sm" truncate="end" title={episode.description}>
+                      {episode.description}
+                    </Text>
+
+                    <Group mt="md">
+                      <audio controls style={{ width: '100%' }}>
+                        <source src={episode.audioUrl} type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                      </audio>
+                    </Group>
+
+                    <Group mt={'md'}>
+                      <Button
+                        onClick={() => {
+                          downloadedIds.includes(episode.id) ? removeEpisode(episode.id) : saveEpisode(episode);
+                        }}
+                      >
+                        {downloadedIds.includes(episode.id) ? 'Remove' : 'Download'}
+                      </Button>
+                      {downloadedIds.includes(episode.id) && (
+                        <Button onClick={() => (playingId === episode.id ? stop() : loadEpisode(episode.id))}>
+                          {playingId === episode.id ? 'Pause' : 'Play'} downloaded
+                        </Button>
+                      )}
+                    </Group>
+                  </Card>
+                </Grid.Col>
+              );
+            })}
+          </Grid>
+        </Box>
+      </div>
+    </CustomAppShell>
   );
 }
 
